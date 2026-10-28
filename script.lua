@@ -1,6 +1,12 @@
--- [[ UTOVQS HUB - GÜNCELLENMİŞ VE DÜZELTİLMİŞ SÜRÜM ]] --
+-- [[ UTOVQS HUB - KESİN ÇÖZÜMLÜ SON SÜRÜM ]] --
 local players = game:GetService("Players")
 local localPlayer = players.LocalPlayer
+local runService = game:GetService("RunService")
+
+-- Durum Değişkenleri
+local activeHeadless = false
+local activeKorblox = false
+local activeZombie = false
 
 -- Key Doğrulama (Key: 6931)
 local function verifyKey(input)
@@ -79,8 +85,8 @@ SubmitButton.MouseButton1Click:Connect(function()
         HubGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
         local HubFrame = Instance.new("Frame")
-        HubFrame.Size = UDim2.new(0, 400, 0, 360)
-        HubFrame.Position = UDim2.new(0.5, -200, 0.5, -180)
+        HubFrame.Size = UDim2.new(0, 400, 0, 320)
+        HubFrame.Position = UDim2.new(0.5, -200, 0.5, -160)
         HubFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
         HubFrame.Active = true
         HubFrame.Draggable = true
@@ -100,10 +106,10 @@ SubmitButton.MouseButton1Click:Connect(function()
         HubTitle.TextXAlignment = Enum.TextXAlignment.Left
         HubTitle.Parent = HubFrame
 
-        -- Buton Oluşturucu Fonksiyon
+        -- Buton Oluşturucu
         local function createButton(name, yPos, callback)
             local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(0.9, 0, 0, 32)
+            btn.Size = UDim2.new(0.9, 0, 0, 35)
             btn.Position = UDim2.new(0.05, 0, 0, yPos)
             btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
             btn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -121,77 +127,69 @@ SubmitButton.MouseButton1Click:Connect(function()
 
         -- 1. Hız
         createButton("Hız Ver (100)", 50, function()
-            localPlayer.Character.Humanoid.WalkSpeed = 100
-        end)
-
-        -- 2. Korblox Bacak (R15 Desteği ile Düzeltildi - ID: 139607718)
-        createButton("Korblox Bacak Yap", 90, function()
-            local char = localPlayer.Character
-            if char then
-                local rightLeg = char:FindFirstChild("RightUpperLeg")
-                if rightLeg then
-                    for _, child in pairs(rightLeg:GetChildren()) do
-                        if child:IsA("SpecialMesh") then child:Destroy() end
-                    end
-                    local mesh = Instance.new("SpecialMesh")
-                    mesh.MeshId = "rbxassetid://139607718"
-                    mesh.TextureId = "rbxassetid://139607721"
-                    mesh.Parent = rightLeg
-                end
+            if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+                localPlayer.Character.Humanoid.WalkSpeed = 100
             end
         end)
 
-        -- 3. Zombie leg
-        createButton("Zombie Leg (Zombi Bacağı)", 130, function()
+        -- 2. Korblox Bacak (HumanoidDescription ile kesin çözüm)
+        createButton("Korblox Bacak Aç/Kapat", 95, function()
+            activeKorblox = not activeKorblox
+            activeZombie = false
             local char = localPlayer.Character
-            if char then
-                local rightLeg = char:FindFirstChild("RightUpperLeg")
-                if rightLeg then
-                    for _, child in pairs(rightLeg:GetChildren()) do
-                        if child:IsA("SpecialMesh") then child:Destroy() end
-                    end
-                    local mesh = Instance.new("SpecialMesh")
-                    mesh.MeshId = "rbxassetid://37754710"
-                    mesh.Parent = rightLeg
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                local desc = hum:GetAppliedDescription()
+                if activeKorblox then
+                    desc.RightLeg = 139607718
+                else
+                    desc.RightLeg = 0
                 end
+                hum:ApplyDescription(desc)
+            end
+        end)
+
+        -- 3. Zombi Bacağı (HumanoidDescription ile kesin çözüm)
+        createButton("Zombie Leg Aç/Kapat", 140, function()
+            activeZombie = not activeZombie
+            activeKorblox = false
+            local char = localPlayer.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                local desc = hum:GetAppliedDescription()
+                if activeZombie then
+                    desc.RightLeg = 37754710
+                else
+                    desc.RightLeg = 0
+                end
+                hum:ApplyDescription(desc)
             end
         end)
 
         -- 4. Headless
-        createButton("Headless (Kafasız Yap)", 170, function()
-            local char = localPlayer.Character
-            if char and char:FindFirstChild("Head") then
-                char.Head.Transparency = 1
-                for _, child in pairs(char.Head:GetChildren()) do
-                    if child:IsA("Decal") then child.Transparency = 1 end
-                end
-            end
+        createButton("Headless (Kafasız) Aç/Kapat", 185, function()
+            activeHeadless = not activeHeadless
         end)
 
-        -- 5. Asker Animasyonu
-        createButton("Asker Animasyonu Uygula", 210, function()
+        -- 5. Menüyü Kapat / Aç
+        createButton("Menüyü Kapat / Aç (Gizle)", 230, function()
+            HubFrame.Visible = not HubFrame.Visible
+        end)
+
+        -- Sürekli Döngü (Headless ve kıyafetleri korumak için)
+        runService.RenderStepped:Connect(function()
             local char = localPlayer.Character
-            if char and char:FindFirstChild("Animate") then
-                local animateScript = char.Animate
-                local anims = {
-                    idle = "rbxassetid://114264441201765",
-                    walk = "rbxassetid://122783976375321",
-                    run  = "rbxassetid://117276571225301"
-                }
-                for animName, id in pairs(anims) do
-                    if animateScript:FindFirstChild(animName) then
-                        for _, child in pairs(animateScript[animName]:GetChildren()) do
-                            if child:IsA("Animation") then child.AnimationId = id end
-                        end
+            if not char then return end
+
+            if activeHeadless then
+                local head = char:FindFirstChild("Head")
+                if head then
+                    head.Transparency = 1
+                    for _, child in pairs(head:GetChildren()) do
+                        if child:IsA("Decal") then child.Transparency = 1 end
                     end
                 end
-                char.Humanoid.Jump = true
             end
-        end)
-
-        -- 6. Menüyü Kapat / Aç
-        createButton("Menüyü Kapat / Aç (Gizle)", 250, function()
-            HubFrame.Visible = not HubFrame.Visible
         end)
 
     else
