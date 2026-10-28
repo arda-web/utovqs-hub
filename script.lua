@@ -1,4 +1,4 @@
--- [[ UTOVQS HUB - OPTİMİZE EDİLMİŞ SÜRÜM ]] --
+-- [[ UTOVQS HUB - GÜNCELLENMİŞ VE DÜZELTİLMİŞ SÜRÜM ]] --
 local players = game:GetService("Players")
 local localPlayer = players.LocalPlayer
 
@@ -72,18 +72,18 @@ SubmitButton.MouseButton1Click:Connect(function()
     if verifyKey(enteredText) then
         ScreenGui:Destroy()
         
-        -- [[ ANA HUB EKRANI (Donma Yapmayan Özel Tasarım) ]] --
+        -- [[ ANA HUB EKRANI ]] --
         local HubGui = Instance.new("ScreenGui")
         HubGui.Name = "UtovqsHubMain"
         HubGui.Parent = game.CoreGui
         HubGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
         local HubFrame = Instance.new("Frame")
-        HubFrame.Size = UDim2.new(0, 400, 0, 300)
-        HubFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+        HubFrame.Size = UDim2.new(0, 400, 0, 360)
+        HubFrame.Position = UDim2.new(0.5, -200, 0.5, -180)
         HubFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
         HubFrame.Active = true
-        HubFrame.Draggable = true -- Sürüklenebilir ekran
+        HubFrame.Draggable = true
         HubFrame.Parent = HubGui
 
         local HubCorner = Instance.new("UICorner")
@@ -100,14 +100,14 @@ SubmitButton.MouseButton1Click:Connect(function()
         HubTitle.TextXAlignment = Enum.TextXAlignment.Left
         HubTitle.Parent = HubFrame
 
-        -- Özellik Butonları Örneği (Hızlı İşlevler)
+        -- Buton Oluşturucu Fonksiyon
         local function createButton(name, yPos, callback)
             local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(0.9, 0, 0, 35)
+            btn.Size = UDim2.new(0.9, 0, 0, 32)
             btn.Position = UDim2.new(0.05, 0, 0, yPos)
             btn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
             btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            btn.TextSize = 14
+            btn.TextSize = 13
             btn.Font = Enum.Font.Gotham
             btn.Text = name
             btn.Parent = HubFrame
@@ -119,25 +119,46 @@ SubmitButton.MouseButton1Click:Connect(function()
             btn.MouseButton1Click:Connect(callback)
         end
 
-        createButton("Hız Ver (100)", 55, function()
+        -- 1. Hız
+        createButton("Hız Ver (100)", 50, function()
             localPlayer.Character.Humanoid.WalkSpeed = 100
         end)
 
-        createButton("Korblox Bacak Yap", 100, function()
+        -- 2. Korblox Bacak (R15 Desteği ile Düzeltildi - ID: 139607718)
+        createButton("Korblox Bacak Yap", 90, function()
             local char = localPlayer.Character
-            if char and char:FindFirstChild("RightLeg") then
-                local rightLeg = char.RightLeg
-                for _, child in pairs(rightLeg:GetChildren()) do
-                    if child:IsA("SpecialMesh") then child:Destroy() end
+            if char then
+                local rightLeg = char:FindFirstChild("RightUpperLeg")
+                if rightLeg then
+                    for _, child in pairs(rightLeg:GetChildren()) do
+                        if child:IsA("SpecialMesh") then child:Destroy() end
+                    end
+                    local mesh = Instance.new("SpecialMesh")
+                    mesh.MeshId = "rbxassetid://139607718"
+                    mesh.TextureId = "rbxassetid://139607721"
+                    mesh.Parent = rightLeg
                 end
-                local mesh = Instance.new("SpecialMesh")
-                mesh.MeshId = "rbxassetid://139607718"
-                mesh.TextureId = "rbxassetid://139607721"
-                mesh.Parent = rightLeg
             end
         end)
 
-        createButton("Headless (Kafasız Yap)", 145, function()
+        -- 3. Zombie leg
+        createButton("Zombie Leg (Zombi Bacağı)", 130, function()
+            local char = localPlayer.Character
+            if char then
+                local rightLeg = char:FindFirstChild("RightUpperLeg")
+                if rightLeg then
+                    for _, child in pairs(rightLeg:GetChildren()) do
+                        if child:IsA("SpecialMesh") then child:Destroy() end
+                    end
+                    local mesh = Instance.new("SpecialMesh")
+                    mesh.MeshId = "rbxassetid://37754710"
+                    mesh.Parent = rightLeg
+                end
+            end
+        end)
+
+        -- 4. Headless
+        createButton("Headless (Kafasız Yap)", 170, function()
             local char = localPlayer.Character
             if char and char:FindFirstChild("Head") then
                 char.Head.Transparency = 1
@@ -147,15 +168,15 @@ SubmitButton.MouseButton1Click:Connect(function()
             end
         end)
 
-        createButton("Asker Animasyonu Uygula", 190, function()
+        -- 5. Asker Animasyonu
+        createButton("Asker Animasyonu Uygula", 210, function()
             local char = localPlayer.Character
             if char and char:FindFirstChild("Animate") then
                 local animateScript = char.Animate
                 local anims = {
                     idle = "rbxassetid://114264441201765",
                     walk = "rbxassetid://122783976375321",
-                    run  = "rbxassetid://117276571225301",
-                    jump = "rbxassetid://92738460397646"
+                    run  = "rbxassetid://117276571225301"
                 }
                 for animName, id in pairs(anims) do
                     if animateScript:FindFirstChild(animName) then
@@ -168,7 +189,8 @@ SubmitButton.MouseButton1Click:Connect(function()
             end
         end)
 
-        createButton("Menüyü Kapat / Aç (Gizle)", 235, function()
+        -- 6. Menüyü Kapat / Aç
+        createButton("Menüyü Kapat / Aç (Gizle)", 250, function()
             HubFrame.Visible = not HubFrame.Visible
         end)
 
